@@ -1,0 +1,22 @@
+
+#Logform{
+  margin:20px 50px;
+  
+}
+
+#work{
+  height:40px;
+  width:100px;
+  text-align:center;
+  margin: 10px 750px;
+}
+
+.errors{
+  color: red;
+  text-align:center
+}
+
+.form-control{
+  text-align: center;
+  margin:20px 50px;
+}
