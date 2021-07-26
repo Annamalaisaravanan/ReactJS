@@ -1,19 +1,107 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import {BrowserRouter} from 'react-router-dom'
-import 'bootstrap/dist/css/bootstrap.css'
-import reportWebVitals from './reportWebVitals';
-import "react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.min.css";
-import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
+const express = require('express');
+const mysql = require('mysql');
+const cors = require('cors');
+const app = express();
 
-ReactDOM.render(
-  <BrowserRouter>
-    <App />
-    </BrowserRouter>,document.getElementById('root'));
+app.use(express.json());
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+app.use(cors());
+
+const db = mysql.createConnection({
+    host:'localhost',
+    user:'root',
+    password: '',
+    database:'register',
+    port:3305
+});
+db.connect()
+
+app.get('/dashboard', (req,res)=>{
+
+    db.query('SELECT * FROM signup',(err,result)=>{
+        if(result.length>0){
+            console.log('result fetched');
+            console.log(result); 
+            res.send(result);
+            res.end();   
+    }
+    
+    });
+});
+
+
+
+
+app.post('/register', (req,res)=>{
+
+const firstname = req.body.firstname;
+const lastname = req.body.lastname;
+const email = req.body.email;
+const password = req.body.password;
+ 
+console.log('email',email);
+
+
+  db.query('SELECT * FROM signup WHERE email=?',[email],(err,result)=>{
+         if(err){
+            console.log(err);
+            console.log('error');
+            res.send({err:err})
+            res.end();
+         }
+         if(result.length>0){
+            console.log('Registered data',result)
+            res.send({message:'email already exist!!'})
+            res.end();
+         }else{
+              db.query('INSERT INTO signup (firstname,lastname,email,password) VALUES (?,?,?,?)',[firstname,lastname,email,password],(err,result)=>{
+                  if(!err){
+                      res.send({message:"You have successfully registered"});
+                      res.end();
+                  } else{
+                      console.log('The error is',err);
+                      res.end();
+                  }
+              });
+         }
+  });
+
+});
+
+
+app.post('/login',(req,res)=>{
+     const logmail = req.body.email;
+     const logpass = req.body.password;
+      
+     console.log(logmail);
+     console.log('working');
+
+     db.query("SELECT * FROM signup WHERE email = ? and password = ?",
+     [logmail,logpass],(err,result)=>{
+           if(err){
+            console.log(err);
+            res.send({err:err})
+               res.end();
+           }
+           if(result.length>0){
+            console.log('result fetched');
+            console.log(result)
+            res.send(result)
+            res.end();
+           }
+           else{
+            console.log('Invalid password')
+            res.send({message:"Invalid Username/password"})
+            res.end();
+           }
+     }
+     );
+
+})
+
+
+
+app.listen('3001', () =>{
+    
+    console.log('Running Test Server');
+})
